@@ -8,7 +8,7 @@ export interface Contract {
   box_size: string;
   items_per_box: number;
   total_weight_kg: number;
-  qr_code_url?: string;
+  qr_code?: string;
   status: 'draft' | 'preparing' | 'shipped' | 'delivered' | 'cancelled';
   progress: number;
   metadata: {

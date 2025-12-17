@@ -26,7 +26,7 @@ export default function NewContractPage() {
       const contractData = {
         ...formData,
         supplier_id: user.id,
-        qr_code_url: null,
+        qr_code: null,
       };
 
       const { data: contract, error: insertError } = await supabase
@@ -38,11 +38,11 @@ export default function NewContractPage() {
       if (insertError) throw insertError;
 
       if (qrFile && contract) {
-        const qrUrl = await uploadQRCode(qrFile, contract.id);
+        const qrUrl = await uploadQRCode(qrFile, contract.id, user.id);
         if (qrUrl) {
           await supabase
             .from('contracts')
-            .update({ qr_code_url: qrUrl })
+            .update({ qr_code: qrUrl })
             .eq('id', contract.id);
         }
       }

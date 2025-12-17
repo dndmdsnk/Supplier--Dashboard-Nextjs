@@ -191,9 +191,9 @@ export default function ContractDetailPage() {
                 {contract.status.toUpperCase()}
               </span>
             </div>
-            {contract.qr_code_url && (
+            {contract.qr_code && (
               <img
-                src={contract.qr_code_url}
+                src={contract.qr_code}
                 alt="QR Code"
                 className="w-24 h-24 border border-gray-200 rounded-lg"
               />

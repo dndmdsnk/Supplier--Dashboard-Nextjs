@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Contract } from '@/lib/types';
+import { validateQRCodeFile } from '@/lib/storage';
 
 interface ContractFormData {
   title: string;
@@ -38,8 +39,9 @@ export default function ContractForm({
 
   const [qrFile, setQrFile] = useState<File | null>(null);
   const [qrPreview, setQrPreview] = useState<string | null>(
-    initialData?.qr_code_url || null
+    initialData?.qr_code || null
   );
+  const [qrFileError, setQrFileError] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -60,7 +62,19 @@ export default function ContractForm({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    setQrFileError('');
+
     if (file) {
+      const validation = validateQRCodeFile(file);
+
+      if (!validation.valid) {
+        setQrFileError(validation.error || 'Invalid file');
+        setQrFile(null);
+        setQrPreview(null);
+        e.target.value = '';
+        return;
+      }
+
       setQrFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -224,23 +238,40 @@ export default function ContractForm({
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          QR Code (optional)
+          QR Code *
         </label>
-        <input
-          type="file"
-          accept="image/png,image/jpeg,image/svg+xml"
-          onChange={handleFileChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-        />
-        {qrPreview && (
-          <div className="mt-3">
-            <img
-              src={qrPreview}
-              alt="QR Code Preview"
-              className="w-32 h-32 object-contain border border-gray-200 rounded-lg"
-            />
-          </div>
-        )}
+        <div className="space-y-2">
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/svg+xml"
+            onChange={handleFileChange}
+            disabled={submitting}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              qrFileError ? 'border-red-500' : 'border-gray-300'
+            }`}
+          />
+          <p className="text-xs text-gray-500">
+            Allowed: PNG, JPEG, SVG. Max size: 2MB
+          </p>
+          {qrFileError && (
+            <p className="text-red-500 text-sm flex items-center gap-1">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293z" clipRule="evenodd" />
+              </svg>
+              {qrFileError}
+            </p>
+          )}
+          {qrPreview && (
+            <div className="mt-3 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+              <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+              <img
+                src={qrPreview}
+                alt="QR Code Preview"
+                className="w-40 h-40 object-contain border-2 border-gray-300 rounded-lg bg-white mx-auto"
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex gap-3 pt-4 border-t border-gray-200">
